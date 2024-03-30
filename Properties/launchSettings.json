@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ChainmailSim": {
+      "commandName": "Project",
+      "commandLineArgs": "40 LF 40 LF 5 -c 0 -m 100"
+    }
+  }
+}
