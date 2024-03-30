@@ -27,6 +27,8 @@ namespace ChainmailSim
         {
             logger?.Invoke($"Round {round}");
 
+
+            // Check if def. Must rally after falling back.
             if (defender.MustRally)
             {
                 logger?.Invoke("Defender must rally");
@@ -42,7 +44,7 @@ namespace ChainmailSim
                 }
             }
 
-
+            //Making attacks
             var attackers = attacker.NumberFighters(frontage);
             var defenders = defender.NumberFighters(frontage);
 
@@ -51,10 +53,12 @@ namespace ChainmailSim
             var defender_kills = Attack_matrix.Get(defender.Type, attacker.Type).Roll(defenders, random);
 
             logger?.Invoke($"{attackers} attackers kill {attacker_kills}");
-            logger?.Invoke($"{defenders} attackers kill {defender_kills}");
+            logger?.Invoke($"{defenders} defenders kill {defender_kills}");
 
             attacker.FigsLeft = Math.Max(attacker.FigsLeft-  defender_kills, 0);
             defender.FigsLeft = Math.Max(defender.FigsLeft - attacker_kills, 0);
+
+            //Shortcut if everyone's dead
 
             if (attacker.FigsLeft == 0 && defender.FigsLeft == 0 )
             {
@@ -72,9 +76,12 @@ namespace ChainmailSim
                 return MakeSummary(round, true);
             }
 
+
+            //POST MELEE MORALE
             var scoreAttacker = 0;
             var scoreDefender = 0;
 
+            //step 1: side with fewer casualties determines positive difference between kills times d6
             if (attacker_kills >= defender_kills)
             {
                 scoreAttacker = (attacker_kills - defender_kills) * random.Next(1, 7);
@@ -84,6 +91,8 @@ namespace ChainmailSim
                 scoreDefender = (defender_kills - attacker_kills) * random.Next(1, 7);
             }
 
+
+            //Step 2: Side with more suriving troops adds difference in figures left
             if (attacker.FigsLeft >= defender.FigsLeft)
             {
                 scoreAttacker += (attacker.FigsLeft - defender.FigsLeft);
@@ -93,8 +102,13 @@ namespace ChainmailSim
                 scoreDefender += (defender.FigsLeft - attacker.FigsLeft);
             }
 
+
+            //Step 3: hoth sides add figures left times morale rating
+
             scoreAttacker += attacker.FigsLeft * MoraleRating.Get(attacker.Type);
             scoreDefender += defender.FigsLeft * MoraleRating.Get(defender.Type);
+
+            //Times 2 if both less than 20 figs
 
             if (attacker.FigsLeft < 20 && defender.FigsLeft < 20)
             {
